@@ -239,6 +239,18 @@ div.mainITKContainer {
                 div.intervention_description {
                     margin-top: 5px;
                 }
+
+                // Planned (not done yet): dashed outline, as on the chart
+                &.planned {
+                    background-color: transparent;
+                    border          : 1px dashed #9aa5b1;
+                }
+
+                span.intervention_status {
+                    font-size  : 0.75em;
+                    font-style : italic;
+                    color      : #707070;
+                }
             }
         }
 

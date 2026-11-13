@@ -47,6 +47,10 @@ export class RotationRenderer {
      * @param {object} [settings]
      * @param {boolean} [settings.allowHTML=false] names and descriptions may contain HTML
      *        (previous behaviour). By default they are plain text, escaped before display.
+     * @param {function} [settings.onInterventionClick] called with (intervention, step) when an
+     *        intervention is clicked, on the chart or in the transcript. The objects are those of
+     *        the data: a free `ref` field on an intervention is the place for the host's own id.
+     * @param {function} [settings.onStepClick] called with (step) when a step is clicked on the chart.
      */
     constructor(target, rotationData, settings = {}) {
         this.settings = Object.assign({ allowHTML: false }, settings);
@@ -93,6 +97,34 @@ export class RotationRenderer {
     /** All elements matching the selector, inside this renderer's container only. */
     findAll(selector) {
         return Array.from(this.container.querySelectorAll(selector));
+    }
+
+    /**
+     * The step (and intervention) behind an element id such as "Step_2" or "Intervention_2_5".
+     * Single itinerary only (the multi-itinerary mode has no transcript ids yet).
+     */
+    resolve(divId) {
+        const match = /^(?:Step_(\d+)|Intervention_(\d+)_(\d+))$/.exec(divId ?? '');
+        if (!match || this.hasTimeline)
+            return null;
+        const step = this.data.steps[Number(match[1] ?? match[2])];
+        if (!step)
+            return null;
+        if (match[1] !== undefined)
+            return { step };
+        const intervention = step.interventions?.[Number(match[3])];
+        return intervention ? { step, intervention } : null;
+    }
+
+    /** Tell the host page that a step or an intervention was clicked. */
+    notifyClick(divId) {
+        const found = this.resolve(divId);
+        if (!found)
+            return;
+        if (found.intervention && typeof this.settings.onInterventionClick === 'function')
+            this.settings.onInterventionClick(found.intervention, found.step);
+        else if (!found.intervention && typeof this.settings.onStepClick === 'function')
+            this.settings.onStepClick(found.step);
     }
 
     /** A name or a text for the HTML: escaped, unless the host allows HTML. */
@@ -197,6 +229,13 @@ export class RotationRenderer {
 
             // Event delegation: one listener on the container covers both transcripts.
             self.container.addEventListener('click', function (e) {
+                const intervention = e.target.closest('.transcript .intervention');
+                if (intervention && self.container.contains(intervention)) {
+                    self.notifyClick(self.getElementID(intervention));
+                    // Clicking an intervention does not fold its step
+                    if (typeof self.settings.onInterventionClick === 'function')
+                        return;
+                }
                 const item = e.target.closest('.transcript .rotation_item');
                 if (item && self.container.contains(item))
                     item.classList.toggle('show-all');
@@ -286,8 +325,10 @@ export class RotationRenderer {
         // Add a click event on the chart to scroll to the corresponding item in the transcript
         self.chart.off('click');
         self.chart.on('click', function (params) {
-            if (!params.data.divId)
+            if (!params.data || !params.data.divId)
                 return;
+
+            self.notifyClick(params.data.divId);
 
             const transcript = self.getVisibleTranscriptDiv();
             const item = transcript ? transcript.querySelector('.' + params.data.divId) : null;
@@ -603,6 +644,7 @@ export class RotationRenderer {
                             intervention.important === true ? intervention.name + ' ⚠️' : intervention.name, // Nom
                             intervention.type == 'intervention_top' ? 'intervention_top' : 'intervention_bottom' // Type
                         ],
+                        planned: intervention.status === 'planned',
                         divId: 'Intervention_' + index + '_' + interventionIndex,
                         interventionDate: new Date(item.startDate.valueOf() + intervention.day * 86400000),
                         interventionDays: intervention.day,
@@ -683,6 +725,8 @@ export class RotationRenderer {
                 var type = api.value(4);
                 let secondary_crop = api.value(5);
                 let bHasSecondaryCrops = api.value(6);
+                // Read on the data item: ECharts sizes the values on the first item (a step)
+                const planned = data[params.dataIndex]?.planned === true;
 
                 // Safety check for invalid coordinates
                 if (!start || !end || start.length < 2 || end.length < 2) return null;
@@ -881,7 +925,13 @@ export class RotationRenderer {
                         shape: {
                             points: points
                         },
-                        style: {
+                        // A planned intervention is drawn hollow, with a dashed outline
+                        style: planned ? {
+                            fill: '#FFFFFF',
+                            stroke: color,
+                            lineWidth: 1.5,
+                            lineDash: [4, 3],
+                        } : {
                             fill: color,
                             stroke: color,
                         },
@@ -980,11 +1030,13 @@ export class RotationRenderer {
                         intDate += ' (J' + days + ')';
 
                     let title = self.text(intervention.name);
+                    const planned = intervention.status === 'planned';
 
                     if (intervention.important === true)
                         title = title + '⚠️';
 
-                    html += '<div class="Intervention_' + index + '_' + interventionIndex + ' intervention"><span class="intervention_title">' + title + '</span>'
+                    html += '<div class="Intervention_' + index + '_' + interventionIndex + ' intervention' + (planned ? ' planned' : '') + '"><span class="intervention_title">' + title + '</span>'
+                        + (planned ? ' <span class="intervention_status">prévue</span>' : '')
                         + '<span class="intervention_date">' + intDate + '</span>'
                         + '<div class="intervention_description">' + self.text(intervention.description) + '</div></div>';
                 });
@@ -1268,7 +1320,7 @@ export class RotationRenderer {
                     else
                         dateString += ' (J' + days + ')';
 
-                    return params.marker + ' <b>' + self.text(params.name) + '</b> - ' + dateString + '<br>' + params.data.description.replace('’', '\'');;
+                    return params.marker + ' <b>' + self.text(params.name) + '</b>' + (params.data.planned ? ' (prévue)' : '') + ' - ' + dateString + '<br>' + params.data.description.replace('’', '\'');;
                 }
             }
         };
