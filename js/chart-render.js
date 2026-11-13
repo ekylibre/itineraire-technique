@@ -9,6 +9,18 @@ const ICONS = {
 };
 
 /**
+ * Escape a text so that it is displayed as is, never interpreted as HTML.
+ */
+function escapeHTML(text) {
+    return String(text ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/**
  * Debounce without dependency (replaces Underscore's _.debounce).
  */
 function debounce(fn, wait) {
@@ -25,8 +37,12 @@ class RotationRenderer {
     /**
      * @param {string|HTMLElement} target id of the container element, or the element itself
      * @param {object|object[]} rotationData the itinerary (see test/test.json)
+     * @param {object} [settings]
+     * @param {boolean} [settings.allowHTML=false] names and descriptions may contain HTML
+     *        (previous behaviour). By default they are plain text, escaped before display.
      */
-    constructor(target, rotationData) {
+    constructor(target, rotationData, settings = {}) {
+        this.settings = Object.assign({ allowHTML: false }, settings);
         this.barHeight = 100;
 
         this.currentFocusIndex = null;
@@ -70,6 +86,19 @@ class RotationRenderer {
     /** All elements matching the selector, inside this renderer's container only. */
     findAll(selector) {
         return Array.from(this.container.querySelectorAll(selector));
+    }
+
+    /** A name or a text for the HTML: escaped, unless the host allows HTML. */
+    text(value) {
+        return this.settings.allowHTML ? String(value ?? '') : escapeHTML(value);
+    }
+
+    /** A color for a style attribute: only a valid CSS color gets through. */
+    safeColor(color) {
+        const value = String(color ?? '');
+        if (typeof CSS !== 'undefined' && CSS.supports)
+            return CSS.supports('color', value) ? value : 'transparent';
+        return /^(#[0-9a-f]{3,8}|[a-z]+|rgba?\([0-9.,%\s]+\)|hsla?\([0-9.,%\s]+\))$/i.test(value) ? value : 'transparent';
     }
 
     fixRotationData(rotationData) {
@@ -926,10 +955,10 @@ class RotationRenderer {
 
             let dates = '<b>' + item.duration + ' mois</b> (' + start + ' ➜ ' + end + ')';
 
-            html += '<div class="Step_' + index + ' rotation_item" style="border-color: ' + item.color + '"><div class="step-header">'
+            html += '<div class="Step_' + index + ' rotation_item" style="border-color: ' + self.safeColor(item.color) + '"><div class="step-header">'
                 + collapseButton
                 + '<div class="step_dates">' + dates + '</div>'
-                + '<h4 class="">' + item.name + ICONS.pencil + '</h4>'
+                + '<h4 class="">' + self.text(item.name) + ICONS.pencil + '</h4>'
                 + '</div><p class="step_description">' + self.getHTMLFormatedDescription(item.description) + '</p>'
                 + '<div class="details">';
 
@@ -943,14 +972,14 @@ class RotationRenderer {
                     else
                         intDate += ' (J' + days + ')';
 
-                    let title = intervention.name;
+                    let title = self.text(intervention.name);
 
                     if (intervention.important === true)
                         title = title + '⚠️';
 
                     html += '<div class="Intervention_' + index + '_' + interventionIndex + ' intervention"><span class="intervention_title">' + title + '</span>'
                         + '<span class="intervention_date">' + intDate + '</span>'
-                        + '<div class="intervention_description">' + intervention.description + '</div></div>';
+                        + '<div class="intervention_description">' + self.text(intervention.description) + '</div></div>';
                 });
             }
 
@@ -1220,7 +1249,7 @@ class RotationRenderer {
                     if (params.data.duration >= 24)
                         duration = Math.floor(params.data.duration / 12) + ' ans' + ((params.data.duration % 12) > 0 ? ' et ' + (params.data.duration % 12) + ' mois' : '');
 
-                    return params.marker + ' <b>' + params.name + '</b><div class="step_dates"><b>' + duration + '</b> (' + start + ' ➜ ' + end + ')</div><br style="clear:both">' + params.data.description.replace('’', '\'');
+                    return params.marker + ' <b>' + self.text(params.name) + '</b><div class="step_dates"><b>' + duration + '</b> (' + start + ' ➜ ' + end + ')</div><br style="clear:both">' + params.data.description.replace('’', '\'');
                 }
                 else {
                     let interventionDate = params.data.interventionDate;
@@ -1232,7 +1261,7 @@ class RotationRenderer {
                     else
                         dateString += ' (J' + days + ')';
 
-                    return params.marker + ' <b>' + params.name + '</b> - ' + dateString + '<br>' + params.data.description.replace('’', '\'');;
+                    return params.marker + ' <b>' + self.text(params.name) + '</b> - ' + dateString + '<br>' + params.data.description.replace('’', '\'');;
                 }
             }
         };
@@ -1318,6 +1347,9 @@ class RotationRenderer {
 
         if (description == undefined)
             return '';
+
+        // Plain text unless the host allows HTML; the formatting below only adds <b> and <br/>
+        description = this.text(description);
 
         // If a line has a column in it, split the line in two and add bold to the first part:
         description = description.replace(/^([^:\n]+):/gm, "<b>$1:</b>");
