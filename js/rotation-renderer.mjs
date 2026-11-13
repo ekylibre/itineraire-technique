@@ -242,8 +242,11 @@ export class RotationRenderer {
 
         self.renderChart();
 
+        // The transcript is always built: show_transcript only decides whether it is shown at
+        // first. The toolbar button (« Afficher la transcription ») shows or hides it, and would
+        // otherwise open an empty column when show_transcript is false.
         const transcripts = self.findAll('.transcript');
-        if (self.data.options.show_transcript) {
+        {
             var html = this.buildHTML();
             transcripts.forEach((el) => {
                 el.innerHTML = html;
@@ -271,8 +274,6 @@ export class RotationRenderer {
                     self.highlightItem(self.getElementID(target));
             }, { signal });
         }
-        else
-            transcripts.forEach((el) => { el.style.display = 'none'; });
 
         // resize the chart when the windows is resized
         const onResize = debounce(function () {
