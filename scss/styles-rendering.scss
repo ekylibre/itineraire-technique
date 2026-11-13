@@ -1,7 +1,73 @@
+// The renderer needs neither Bootstrap nor Font Awesome: the few rules it took
+// from them are below, scoped to the renderer. Typography (font, color) is
+// inherited from the host page.
 div.mainITKContainer {
     container-type: inline-size;
     container-name: myparent;
     line-height   : 1rem;
+
+    // Was Bootstrap's .row: flex layout with a 1.5rem gutter
+    display       : flex;
+    flex-wrap     : wrap;
+    margin-left   : -0.75rem;
+    margin-right  : -0.75rem;
+
+    &,
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    // Was Bootstrap's .col-auto / .col-12 on the three columns
+    > .left-transcript,
+    > .chart-div,
+    > .bottom-transcript {
+        flex         : 0 0 auto;
+        max-width    : 100%;
+        padding-left : 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    > .bottom-transcript {
+        width: 100%;
+    }
+
+    // Was Bootstrap's Reboot for the elements of the transcript
+    h4,
+    h5 {
+        margin-top   : 0;
+        margin-bottom: 0.5rem;
+        font-weight  : 500;
+        line-height  : 1.2;
+    }
+
+    h5 {
+        font-size: 1.25rem;
+    }
+
+    p {
+        margin-top   : 0;
+        margin-bottom: 1rem;
+    }
+
+    b {
+        font-weight: bolder;
+    }
+
+    // Was .invisible
+    .tika-invisible {
+        visibility: hidden;
+    }
+
+    // Was Font Awesome: inline SVG icons, sized like the text
+    svg.tika-icon {
+        display       : inline-block;
+        width         : 1em;
+        height        : 1em;
+        vertical-align: -0.125em;
+        overflow      : visible;
+    }
 
     &.view-horizontal {
         max-height: 455px;
@@ -114,7 +180,17 @@ div.mainITKContainer {
 
         .step_description {
             clear: both;
+
+            // Was .clearfix
+            &::after {
+                display: block;
+                clear  : both;
+                content: "";
+            }
         }
+
+        // Was .text-start
+        text-align: left;
 
         &.show-all {
             div.collapse-button {
@@ -147,6 +223,17 @@ div.mainITKContainer {
                     color           : #707070;
                     background-color: #F0F3F5;
                     float           : right;
+
+                    // Was .badge.rounded-pill
+                    display       : inline-block;
+                    padding       : 0.35em 0.65em;
+                    font-size     : 0.75em;
+                    font-weight   : 700;
+                    line-height   : 1;
+                    text-align    : center;
+                    white-space   : nowrap;
+                    vertical-align: baseline;
+                    border-radius : 50rem;
                 }
 
                 div.intervention_description {

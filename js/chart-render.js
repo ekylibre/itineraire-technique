@@ -1,5 +1,14 @@
 
 /**
+ * Inline icons (replace Font Awesome, which the renderer no longer needs).
+ * Same glyphs as fa-chevron-down and fa-pencil, sized like the text.
+ */
+const ICONS = {
+    chevronDown: '<svg class="tika-icon" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path fill="currentColor" d="M207 381.5L12.7 187.1c-9.4-9.4-9.4-24.6 0-33.9l22.7-22.7c9.4-9.4 24.5-9.4 33.9 0L224 284.5l154.7-154c9.4-9.3 24.5-9.3 33.9 0l22.7 22.7c9.4 9.4 9.4 24.6 0 33.9L241 381.5c-9.4 9.4-24.6 9.4-34 0z"/></svg>',
+    pencil: '<svg class="tika-icon step-edit" viewBox="0 0 512 512" aria-hidden="true" focusable="false"><path fill="currentColor" d="M497.9 142.1l-46.1 46.1c-4.7 4.7-12.3 4.7-17 0l-111-111c-4.7-4.7-4.7-12.3 0-17l46.1-46.1c18.7-18.7 49.1-18.7 67.9 0l60.1 60.1c18.8 18.7 18.8 49.1 0 67.9zM284.2 99.8L21.6 362.4.4 483.9c-2.9 16.4 11.4 30.6 27.8 27.8l121.5-21.3 262.6-262.6c4.7-4.7 4.7-12.3 0-17l-111-111c-4.8-4.7-12.4-4.7-17.1 0z"/></svg>',
+};
+
+/**
  * Debounce without dependency (replaces Underscore's _.debounce).
  */
 function debounce(fn, wait) {
@@ -50,10 +59,10 @@ class RotationRenderer {
         this.container.style.width = '100%';
 
         if (!this.container.querySelector('.mainITKContainer')) {
-            this.container.insertAdjacentHTML('beforeend', `<div class="row mainITKContainer view-` + this.initialLayout + (this.data.options.show_transcript ? ' withTranscript' : '') + `">
-                <div class="col-auto left-transcript"><div class="transcript"></div></div>
-                <div class="col col-auto chart-div"><div class="charts"></div></div>
-                <div class="col col-12 bottom-transcript"><div class="transcript"></div></div>
+            this.container.insertAdjacentHTML('beforeend', `<div class="mainITKContainer view-` + this.initialLayout + (this.data.options.show_transcript ? ' withTranscript' : '') + `">
+                <div class="left-transcript"><div class="transcript"></div></div>
+                <div class="chart-div"><div class="charts"></div></div>
+                <div class="bottom-transcript"><div class="transcript"></div></div>
             </div>`);
         }
     }
@@ -906,22 +915,22 @@ class RotationRenderer {
 
         self.data.steps.forEach((item, index) => {
 
-            let visibility = 'invisible';
+            let visibility = 'tika-invisible';
             if (item.interventions?.length > 0)
-                visibility = "visible";
+                visibility = "";
 
-            let collapseButton = '<div class="collapse-button ' + visibility + '"><i class="fa fa-chevron-down" aria-hidden="true"></i></div>';
+            let collapseButton = '<div class="collapse-button ' + visibility + '">' + ICONS.chevronDown + '</div>';
 
             let start = item.startDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: '2-digit' });
             let end = item.endDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: '2-digit' });
 
             let dates = '<b>' + item.duration + ' mois</b> (' + start + ' ➜ ' + end + ')';
 
-            html += '<div class="Step_' + index + ' rotation_item text-start" style="border-color: ' + item.color + '"><div class="step-header">'
+            html += '<div class="Step_' + index + ' rotation_item" style="border-color: ' + item.color + '"><div class="step-header">'
                 + collapseButton
                 + '<div class="step_dates">' + dates + '</div>'
-                + '<h4 class="">' + item.name + '<i class="fa fa-pencil step-edit" aria-hidden="true"></i></h4>'
-                + '</div><p class="step_description clearfix">' + self.getHTMLFormatedDescription(item.description) + '</p>'
+                + '<h4 class="">' + item.name + ICONS.pencil + '</h4>'
+                + '</div><p class="step_description">' + self.getHTMLFormatedDescription(item.description) + '</p>'
                 + '<div class="details">';
 
             if (item.interventions?.length > 0) {
@@ -940,7 +949,7 @@ class RotationRenderer {
                         title = title + '⚠️';
 
                     html += '<div class="Intervention_' + index + '_' + interventionIndex + ' intervention"><span class="intervention_title">' + title + '</span>'
-                        + '<span class="intervention_date badge rounded-pill">' + intDate + '</span>'
+                        + '<span class="intervention_date">' + intDate + '</span>'
                         + '<div class="intervention_description">' + intervention.description + '</div></div>';
                 });
             }
