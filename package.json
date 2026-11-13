@@ -4,8 +4,10 @@
   "description": "A visualisation tool to show agricultural technical itineraries based on Echarts",
   "main": "editor.html",
   "module": "js/rotation-renderer.mjs",
+  "types": "types/rotation-renderer.d.ts",
   "exports": {
     ".": {
+      "types": "./types/rotation-renderer.d.ts",
       "import": "./js/rotation-renderer.mjs",
       "default": "./js/rotation-renderer.mjs"
     },
