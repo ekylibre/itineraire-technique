@@ -1,3 +1,10 @@
+// Fichier généré par `npm run build:js` depuis js/rotation-renderer.mjs : ne pas modifier.
+/**
+ * TIKA, rendu des itinéraires techniques (module ES).
+ *
+ * Source unique du rendu : js/chart-render.js (script classique, variable
+ * globale window.RotationRenderer) en est généré par `npm run build:js`.
+ */
 
 /**
  * Inline icons (replace Font Awesome, which the renderer no longer needs).

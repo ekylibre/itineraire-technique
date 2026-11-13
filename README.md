@@ -68,4 +68,19 @@ Puis appeler la fonction de rendu sur votre JSON (vous devez avoir deux div dans
         });
 ```
 
+### Avec un outil de construction (Vite, webpack…)
+
+Le paquet fournit aussi un module ES, qui importe ECharts (à installer à côté : `npm i echarts`) :
+```
+import { RotationRenderer } from "@osfarm/itineraire-technique";
+import "@osfarm/itineraire-technique/styles.css";
+
+const renderer = new RotationRenderer(document.getElementById("itk"), data);
+renderer.render();
+// ...
+renderer.dispose();
+```
+
+Les noms et descriptions sont affichés comme du texte. Si vos données contiennent du HTML à interpréter, passez `{ allowHTML: true }` en troisième paramètre du constructeur.
+
 Le JSON doit respecter le format que vous pourrez trouver dans les différents [exemples de test](https://osfarm.github.io/itineraire-technique/test/test.json).

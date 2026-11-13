@@ -3,12 +3,24 @@
   "version": "1.2.15",
   "description": "A visualisation tool to show agricultural technical itineraries based on Echarts",
   "main": "editor.html",
+  "module": "js/rotation-renderer.mjs",
+  "exports": {
+    ".": {
+      "import": "./js/rotation-renderer.mjs",
+      "default": "./js/rotation-renderer.mjs"
+    },
+    "./styles.css": "./css/styles-rendering.css",
+    "./css/*": "./css/*",
+    "./js/*": "./js/*",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "build:scss": "sass --style=compressed scss/styles-editor.scss css/styles-editor.css && sass --style=compressed scss/styles-rendering.scss css/styles-rendering.css",
     "dev:scss": "sass scss/styles-editor.scss css/styles-editor.css && sass scss/styles-rendering.scss css/styles-rendering.css",
     "watch:scss": "sass --watch scss/styles-editor.scss:css/styles-editor.css scss/styles-rendering.scss:css/styles-rendering.css",
-    "build": "npm run build:scss",
-    "start": "npm run watch:scss"
+    "build": "npm run build:js && npm run build:scss",
+    "start": "npm run watch:scss",
+    "build:js": "node scripts/build-classic.mjs"
   },
   "devDependencies": {
     "sass": "^1.85.1"
@@ -32,5 +44,13 @@
     "farming",
     "itineraire-technique",
     "TIKA"
-  ]
+  ],
+  "peerDependencies": {
+    "echarts": "^6.0.0"
+  },
+  "peerDependenciesMeta": {
+    "echarts": {
+      "optional": true
+    }
+  }
 }
