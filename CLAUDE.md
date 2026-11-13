@@ -58,7 +58,9 @@ npm consumer-side integration snippet).
 ### Rendering (`js/rotation-renderer.mjs`, generated `js/chart-render.js`)
 
 Everything rendering-related lives in one class, `RotationRenderer`. The source is an ES module that
-imports ECharts (`import * as echarts from "echarts"`, a peer dependency); the generated classic script
+imports ECharts modularly (`echarts/core` plus only the charts and components it uses, registered in
+the `<echarts-modules>` block: add a module there when the renderer starts using a new ECharts
+feature); the generated classic script
 exposes it as `window.RotationRenderer` and uses the global `echarts` instead. It depends on nothing
 else (no jQuery, Underscore, Bootstrap or Font Awesome). It is constructed with a target (element id or
 the element itself), a "system" JSON object (see schema below) and optional settings

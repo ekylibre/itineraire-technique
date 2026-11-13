@@ -6,7 +6,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 const source = readFileSync(new URL("../js/rotation-renderer.mjs", import.meta.url), "utf8");
 let classic = source
-    .replace(/^import \* as echarts from "echarts";\n/m, "")
+    .replace(/^\/\/ <echarts-modules>[\s\S]*?^\/\/ <\/echarts-modules>\n/m, "")
+    .replace(/^import \* as echarts from "echarts(\/core)?";\n/m, "")
     .replace(/^export default RotationRenderer;\n/m, "")
     .replace(/^export \{[^}]*\};\n/m, "")
     .replace(/^export class /m, "class ");

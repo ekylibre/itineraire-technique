@@ -4,7 +4,30 @@
  * Source unique du rendu : js/chart-render.js (script classique, variable
  * globale window.RotationRenderer) en est généré par `npm run build:js`.
  */
-import * as echarts from "echarts";
+import * as echarts from "echarts/core";
+// <echarts-modules> Only the parts of ECharts the renderer uses (the bundle stays small).
+// Removed from the classic script, which relies on the full ECharts loaded by the page.
+import { BarChart, CustomChart, LineChart, PieChart } from "echarts/charts";
+import {
+    AxisPointerComponent,
+    DataZoomInsideComponent,
+    DataZoomSliderComponent,
+    GridComponent,
+    TimelineComponent,
+    TitleComponent,
+    ToolboxComponent,
+    TooltipComponent,
+} from "echarts/components";
+import { LabelLayout } from "echarts/features";
+import { CanvasRenderer } from "echarts/renderers";
+
+echarts.use([
+    BarChart, CustomChart, LineChart, PieChart,
+    AxisPointerComponent, DataZoomInsideComponent, DataZoomSliderComponent, GridComponent,
+    TimelineComponent, TitleComponent, ToolboxComponent, TooltipComponent,
+    LabelLayout, CanvasRenderer,
+]);
+// </echarts-modules>
 
 /**
  * Inline icons (replace Font Awesome, which the renderer no longer needs).
