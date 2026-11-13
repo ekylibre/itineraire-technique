@@ -1061,7 +1061,7 @@ export class RotationRenderer {
                     html += '<div class="Intervention_' + index + '_' + interventionIndex + ' intervention' + (planned ? ' planned' : '') + '"><span class="intervention_title">' + title + '</span>'
                         + (planned ? ' <span class="intervention_status">prévue</span>' : '')
                         + '<span class="intervention_date">' + intDate + '</span>'
-                        + '<div class="intervention_description">' + self.text(intervention.description) + '</div></div>';
+                        + '<div class="intervention_description">' + self.getHTMLFormatedDescription(intervention.description) + '</div></div>';
                 });
             }
 
